@@ -1,3 +1,9 @@
+'''
+Code that extract patch dataset from the home grasping data collected
+
+Example run:
+    python extract_patch_dataset.py --home_dataset_path ~/home_dataset/grasping_data --patch_dataset_path '/tmp/' --train_fraction 0.8 --display 1 --msec 1000
+'''
 import cloudpickle as pkl
 import os
 from os.path import join, getsize
@@ -12,10 +18,10 @@ import scipy
 from scipy import misc
 import random
 import string
+import argparse
 
 HOME_DIR = os.environ['HOME']
-DATA_ROOT_DIR = os.path.join(HOME_DIR,'Dropbox/Apps/LowCostArmDataUploader/grasping_data')
-#DATA_ROOT_DIR = os.path.join(HOME_DIR,'grasping_data')
+DATA_ROOT_DIR = os.path.join(HOME_DIR,'home_dataset/grasping_data_small')
 GRASP_SUBNAME = 'grasp_'
 DATA_FILE = 'data.p'
 ESSENTIAL_KEYS = ['grasp_x_img', 'grasp_y_img', 'valid_grasp', 'grasp_theta', 'grasp_result']
@@ -24,21 +30,22 @@ SUCCESS_KEY = 'grasp_result'
 IMAGE_FILE = 'color.jpg'
 DEPTH_FILE = 'depth.jpg'
 PATCH_SIZE = 150
+
+## Balances the dataset such that each grasp environment has atleast MIN_SUCCESS_RATE rate of grasp success
 MIN_SUCCESS_RATE = 0.25
-    
-def main():
-    embed()
+# MIN_SUCCESS_RATE = 0.0 
 
 class DataHandler(object):
-    def __init__(self, train_root_dir, val_root_dir, train_rf=[''], train_ef=[''], val_rf=[''], val_ef=['']):
+    def __init__(self, train_root_dir, val_root_dir=None, train_rf=[''], train_ef=[''], val_rf=[''], val_ef=['']):
         self.train_grasp_dirs = np.array(self.parse_grasp_data(train_root_dir, train_rf, train_ef))
-        self.val_grasp_dirs = np.array(self.parse_grasp_data(val_root_dir, val_rf, val_ef))
         self.train_dataset = self.randomize_dataset(self.train_grasp_dirs)
-        self.val_dataset = self.randomize_dataset(self.val_grasp_dirs)
+        if val_root_dir != None:
+            self.val_grasp_dirs = np.array(self.parse_grasp_data(val_root_dir, val_rf, val_ef))
+            self.val_dataset = self.randomize_dataset(self.val_grasp_dirs)
 
-    def write_train_val(self, data_dir, display=False):
-        self.write_dataset(self.train_dataset, os.path.join(data_dir, 'Train'), display=display)
-        self.write_dataset(self.val_dataset, os.path.join(data_dir, 'Validation'), display=display)
+    def write_train_val(self, data_dir, **kwargs):
+        self.write_dataset(self.train_dataset, os.path.join(data_dir, 'Train'), **kwargs)
+        self.write_dataset(self.val_dataset, os.path.join(data_dir, 'Validation'), **kwargs)
 
     def random_val_split(self, dataset, train_fraction=0.8):
         dataset = copy(dataset)
@@ -47,8 +54,8 @@ class DataHandler(object):
         perms = np.random.permutation(l)
         self.train_dataset = dataset[perms[:nt]]
         self.val_dataset = dataset[perms[nt:]]
-        
-    def write_dataset(self, dataset, data_dir, display=False):
+
+    def write_dataset(self, dataset, data_dir, **kwargs):
         self.mkdir(data_dir)
         pos_data_dir = os.path.join(data_dir,'positive')
         neg_data_dir = os.path.join(data_dir,'negative')
@@ -66,7 +73,7 @@ class DataHandler(object):
         neg_csv_writer.writerow(['PatchFilePath','Theta','Path', 'GraspHeight', 'GraspWidth'])
         for idx,d in enumerate(dataset):
             print('Grasp #{} Grasp Folder: {} Success: {}'.format(idx, d[0], d[1]['grasp_result']))
-            grasp_datapoints = self.process_datapoint(d, display=display)
+            grasp_datapoints = self.process_datapoint(d, **kwargs)
             if grasp_datapoints[0] is None:
                 continue
             #grasp_datapoints = self.get_labeled_datapoints(grasp_datapoints)
@@ -83,7 +90,7 @@ class DataHandler(object):
                 else:
                     csv_writer = neg_csv_writer
                     image_dir = neg_image_dir
-                csv_writer.writerow([im_name, theta_label, d[0], h, w])
+                csv_writer.writerow([im_name, theta_label, '/'.join(d[0].split('/')[3:]), h, w])
                 cv2.imwrite(os.path.join(image_dir, im_name), image)
 
     def split_train_val(self):
@@ -164,7 +171,7 @@ class DataHandler(object):
                 contains_filter = True
                 break
         return contains_filter
-   
+
     def filter_list(self, name_list, name_filters):
         new_list = []
         for l in name_list:
@@ -174,7 +181,7 @@ class DataHandler(object):
                     break
         return new_list
 
-    def process_datapoint(self, datapoint, display=False):
+    def process_datapoint(self, datapoint, display=False, display_msec=500):
         img_path = os.path.join(datapoint[0], IMAGE_FILE)
         if os.path.isfile(img_path):
             datapoint = copy(datapoint)
@@ -190,7 +197,7 @@ class DataHandler(object):
         if display==True:
             I = self.draw_rectangle(copy(image), h, w, t, PATCH_SIZE)
             cv2.imshow('image',I)
-            cv2.waitKey(0)
+            cv2.waitKey(display_msec)
         grasp_datapoints = self.data_augment(image, s, h, w, t, PATCH_SIZE, 18)
         return grasp_datapoints
 
@@ -256,7 +263,7 @@ class DataHandler(object):
                 datapoint[1]['data_path'] = datapoint[0]
                 dataset.append(datapoint[1])
         return dataset
-    
+
     def mkdir(self, directories):
         if not hasattr(directories, '__iter__'):
             directories = [directories]
@@ -266,6 +273,22 @@ class DataHandler(object):
                 shutil.move(directory, tmp)
                 shutil.rmtree(tmp)
             os.makedirs(directory)
-  
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--home_dataset_path', type=str, default=DATA_ROOT_DIR, help='Path to home grasping data')
+    parser.add_argument('--patch_dataset_path', type=str, default='.tmp', help='Path to patch dataset')
+    parser.add_argument('--train_fraction', type=float, default=0.8, help='ratio of training data')
+    parser.add_argument('--display', type=int, default=1, help='1 if you want to display is random sequence; 0 otherwise')
+    parser.add_argument('--msec', type=int, default=500, help='milliseconds between display')
+
+    ## Parse arguments
+    args = parser.parse_args()
+    print('\n\n#######################\n## Loading Home Data ##\n#######################\n')
+    D = DataHandler(args.home_dataset_path)
+    D.random_val_split(D.train_dataset, args.train_fraction)
+    print('\n\n###########################\n## Writing Patch Dataset ##\n###########################\n')
+    D.write_train_val(args.patch_dataset_path, display=bool(args.display), display_msec=args.msec)
+
 if __name__=='__main__':
     main()

@@ -1,3 +1,5 @@
 patch_dataset
 grasping_data
+grasping_data_small
 *.pyc
+*.tar.gz
