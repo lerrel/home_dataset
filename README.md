@@ -1,6 +1,6 @@
 # Home Grasping Dataset
 
-Tools for downloading and using the home grasping dataset in the [Robot Learning in Homes](http://papers.nips.cc/paper/8123-robot-learning-in-homes-improving-generalization-and-reducing-dataset-bias.pdf) paper.
+Tools for downloading and using the home grasping dataset in the [Robot Learning in Homes](http://papers.nips.cc/paper/8123-robot-learning-in-homes-improving-generalization-and-reducing-dataset-bias.pdf) paper. In this pruned dataset, there are 28,874 grasp attempts with a 18.6% grasp success rate. 
 
 ## Download links
 There are three datasets you can work with from this repository:
