@@ -4,9 +4,9 @@ Tools for downloading and using the home grasping dataset in the [Robot Learning
 
 ## Download links
 There are three datasets you can work with from this repository:
-* [The full raw grasping data collected on our low cost robot (~30GB)](https://www.dropbox.com/s/652sken7f5hqi68/Patch_Dataset.tar.gz)
-* [A smaller subsample of the raw grasping data collected on our low cost robot (~1.2GB)](https://www.dropbox.com/s/652sken7f5hqi68/Patch_Dataset.tar.gz)
-* [The patch dataset extracted from the full grasp dataset (~5.3GB)](https://www.dropbox.com/s/652sken7f5hqi68/Patch_Dataset.tar.gz)
+* [The full raw grasping data collected on our low cost robot (~30GB)](https://www.dropbox.com/s/njw0extmmon2yro/grasping_data.tar.gz)
+* [A smaller subsample of the raw grasping data collected on our low cost robot (~1.2GB)](https://www.dropbox.com/s/vzricn40z2n4la5/grasping_data_small.tar.gz)
+* [The patch dataset extracted from the full grasp dataset (~5.3GB)](https://www.dropbox.com/s/k5eogg3nuc5ybtv/patch_dataset.tar.gz)
 
 ## Data organization
 The raw grasping data is organized as follows:
@@ -26,14 +26,14 @@ The raw grasping data is organized as follows:
 `ROBOT_ID` runs from 1 to 5 and corresponds to the robot on which the data was collected. `GRASP_ENVIRONMENT` corresponds to a grasping run. All the grasps in a specific environment run are in the same home. `ATTEMPT_ID` corresponds to a specific grasp attempt in the `GRASP_ENVIRONMENT`. Each grasp contains the RGB `color.jpg` image, the Depth `depth.jpg` image, and a pickle file `data.p` that contains information about the grasp attempt (like success or failure).
 
 ## Getting started with the data
-To get started with this data, we will use the smaller subsample. To get the full data, change the `wget` download to https://www.dropbox.com/s/652sken7f5hqi68/Patch_Dataset.tar.gz.
+To get started with this data, we will use the smaller subsample. To get the full data, change the `wget` download to https://www.dropbox.com/s/njw0extmmon2yro/grasping_data.tar.gz.
 
 ```bash
 cd ~
 git clone https://github.com/lerrel/home_dataset.git
 cd home_dataset
-wget https://www.dropbox.com/s/652sken7f5hqi68/Patch_Dataset.tar.gz
-tar -xvzf Patch_Dataset.tar.gz
+wget https://www.dropbox.com/s/vzricn40z2n4la5/grasping_data_small.tar.gz
+tar -xvzf grasping_data_small.tar.gz
 ```
 
 Run the following script in `python 2.7` to display and extract the patch dataset from the raw grasping data.
@@ -46,7 +46,7 @@ To download pre-extracted patch dataset:
 
 ```bash
 cd ~/home_dataset
-wget https://www.dropbox.com/s/652sken7f5hqi68/Patch_Dataset.tar.gz
+wget https://www.dropbox.com/s/k5eogg3nuc5ybtv/patch_dataset.tar.gz
 tar -xvzf Patch_Dataset.tar.gz
 ```
 

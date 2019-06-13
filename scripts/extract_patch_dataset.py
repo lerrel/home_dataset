@@ -1,5 +1,5 @@
 '''
-Code that extract patch dataset from the home grasping data collected
+Code that extract patch dataset from the home grasping data collected in http://papers.nips.cc/paper/8123-robot-learning-in-homes-improving-generalization-and-reducing-dataset-bias.pdf
 
 Example run:
     python extract_patch_dataset.py --home_dataset_path ~/home_dataset/grasping_data --patch_dataset_path '/tmp/' --train_fraction 0.8 --display 1 --msec 1000
