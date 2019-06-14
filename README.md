@@ -36,7 +36,14 @@ wget https://www.dropbox.com/s/vzricn40z2n4la5/grasping_data_small.tar.gz
 tar -xvzf grasping_data_small.tar.gz
 ```
 
-Run the following script in `python 2.7` to display and extract the patch dataset from the raw grasping data.
+To read the data, a few helper scripts are provided in `scripts`. To use them you will need to install appropriate python packages on `python 2.7`:
+
+```bash
+sudo apt-get install python-numpy python-scipy
+pip install cloudpickle ipython==5 opencv-python temp argparse pytest-shutil
+```
+
+Run the following script to display and extract the patch dataset from the raw grasping data.
 
 ```bash
 python scripts/extract_patch_dataset.py --home_dataset_path ~/home_dataset/grasping_data_small --patch_dataset_path '/tmp/' --train_fraction 0.8 --display 1 --msec 1000
